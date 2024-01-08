@@ -1,8 +1,6 @@
 package slice_test
 
-import (
-	"homework/go-common/slice"
-)
+import "github.com/FormulaMax/go-common-kit/slice"
 
 func DeleteTest() {
 	s1 := []int{5, 8, 9, 3}
