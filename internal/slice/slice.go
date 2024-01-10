@@ -15,7 +15,7 @@ func Add[T any](src []T, element T, index int) ([]T, error) {
 	var zero T
 	src = append(src, zero)
 	for i := len(src) - 1; i > index; i-- {
-		if i-1 > 0 {
+		if i-1 >= 0 {
 			src[i] = src[i-1]
 		}
 	}
@@ -44,13 +44,6 @@ func Delete[T any](src []T, index int) ([]T, T, error) {
 // int 容量计算结果
 // bool 是否需要缩容
 func calCapacity(capacity, length int) (int, bool) {
-	if capacity <= 64 {
-		return capacity, false
-	}
-	if capacity > 2048 && (capacity/length >= 2) {
-		return int(float32(capacity) * float32(factor)), true
-	}
-
 	switch {
 	case capacity <= 64:
 		return capacity, false
