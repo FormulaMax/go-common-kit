@@ -1,4 +1,4 @@
-package list
+package listx
 
 import (
 	go_common_kit "github.com/FormulaMax/go-common-kit"

@@ -1,4 +1,4 @@
-package list
+package listx
 
 import (
 	"github.com/FormulaMax/go-common-kit/internal/errs"

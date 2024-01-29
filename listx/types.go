@@ -1,4 +1,4 @@
-package list
+package listx
 
 // List 接口
 // 该接口只定义清楚各个方法的行为和表现
