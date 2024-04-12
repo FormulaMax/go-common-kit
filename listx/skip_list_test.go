@@ -2,9 +2,8 @@ package listx
 
 import (
 	go_common_kit "github.com/FormulaMax/go-common-kit"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestNewSkipList(t *testing.T) {

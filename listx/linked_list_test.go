@@ -3,7 +3,6 @@ package listx
 import (
 	"errors"
 	"fmt"
-	"github.com/FormulaMax/go-common-kit/internal/errs"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
@@ -58,14 +57,14 @@ func TestLinkedList_Add(t *testing.T) {
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			newVal:  100,
 			index:   -1,
-			wantErr: errs.NewErrIndexOutOfRange(3, -1),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, -1),
 		},
 		{
 			name:    "add num to index OutOfRange",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			newVal:  100,
 			index:   4,
-			wantErr: errs.NewErrIndexOutOfRange(3, 4),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, 4),
 		},
 		{
 			name:           "add num to index 0",
@@ -102,25 +101,25 @@ func TestLinkedList_Delete(t *testing.T) {
 			name:    "delete num to index -1",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			index:   -1,
-			wantErr: errs.NewErrIndexOutOfRange(3, -1),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, -1),
 		},
 		{
 			name:    "delete beyond length index 99",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			index:   99,
-			wantErr: errs.NewErrIndexOutOfRange(3, 99),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, 99),
 		},
 		{
 			name:    "delete beyond length index 3",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			index:   3,
-			wantErr: errs.NewErrIndexOutOfRange(3, 3),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, 3),
 		},
 		{
 			name:    "delete empty node",
 			list:    NewLinkedListOf[int]([]int{}),
 			index:   3,
-			wantErr: errs.NewErrIndexOutOfRange(0, 3),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 0, 3),
 		},
 		{
 			name:           "delete num to index 0",
@@ -156,11 +155,10 @@ func TestLinkedList_Delete(t *testing.T) {
 			delVal, err := tc.list.Delete(tc.index)
 			if err != nil {
 				assert.Equal(t, tc.wantErr, err)
-				return
+			} else {
+				assert.Equal(t, tc.delVal, delVal)
+				assert.Equal(t, tc.wantLinkedList.AsSlice(), tc.list.AsSlice())
 			}
-			assert.Equal(t, tc.delVal, delVal)
-			assert.Equal(t, tc.wantLinkedList.AsSlice(), tc.list.AsSlice())
-
 		})
 	}
 }
@@ -326,19 +324,19 @@ func TestLinkedList_Get(t *testing.T) {
 			name:    "over left",
 			list:    NewLinkedListOf([]int{1, 2, 3, 4, 5}),
 			index:   -1,
-			wantErr: errs.NewErrIndexOutOfRange(5, -1),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 5, -1),
 		},
 		{
 			name:    "over right",
 			list:    NewLinkedListOf([]int{1, 2, 3, 4, 5}),
 			index:   5,
-			wantErr: errs.NewErrIndexOutOfRange(5, 5),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 5, 5),
 		},
 		{
 			name:    "empty list",
 			list:    NewLinkedListOf([]int{}),
 			index:   0,
-			wantErr: errs.NewErrIndexOutOfRange(0, 0),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 0, 0),
 		},
 	}
 	for _, tc := range tests {
@@ -409,19 +407,19 @@ func TestLinkedList_Set(t *testing.T) {
 			name:    "set num to index -1",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			index:   -1,
-			wantErr: errs.NewErrIndexOutOfRange(3, -1),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, -1),
 		},
 		{
 			name:    "set beyond length index 99",
 			list:    NewLinkedListOf[int]([]int{1, 2, 3}),
 			index:   99,
-			wantErr: errs.NewErrIndexOutOfRange(3, 99),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, 99),
 		},
 		{
 			name:    "set empty node",
 			list:    NewLinkedListOf[int]([]int{}),
 			index:   3,
-			wantErr: errs.NewErrIndexOutOfRange(0, 3),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 0, 3),
 		},
 		{
 			name:           "set num to index 3",
@@ -449,14 +447,14 @@ func TestLinkedList_Set(t *testing.T) {
 			list:    NewLinkedListOf[int]([]int{-11, 22, -33, 44, -55, 999, -888}),
 			index:   7,
 			setVal:  888,
-			wantErr: errs.NewErrIndexOutOfRange(7, 7),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 7, 7),
 		},
 		{
 			name:    "len(*node) == 0",
 			list:    NewLinkedListOf[int]([]int{}),
 			index:   0,
 			setVal:  888,
-			wantErr: errs.NewErrIndexOutOfRange(0, 0),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 0, 0),
 		},
 	}
 

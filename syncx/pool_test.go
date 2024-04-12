@@ -15,12 +15,12 @@ func TestPool(t *testing.T) {
 		res[0] = 'A'
 		return res
 	})
+
 	res := p.Get()
 	assert.Equal(t, "A", string(res))
 	res = append(res, 'B')
 	p.Put(res)
 	res = p.Get()
-	fmt.Println(res)
 	if cnt == 1 {
 		assert.Equal(t, "AB", string(res))
 	} else {
@@ -28,7 +28,7 @@ func TestPool(t *testing.T) {
 	}
 }
 
-func TestPoolExample(t *testing.T) {
+func ExampleNew() {
 	p := NewPool[[]byte](func() []byte {
 		res := make([]byte, 1, 12)
 		res[0] = 'A'
@@ -36,9 +36,9 @@ func TestPoolExample(t *testing.T) {
 	})
 
 	res := p.Get()
-	fmt.Println(len(res))
-	fmt.Println(cap(res))
-	fmt.Println(string(res))
+	fmt.Print(string(res))
+	// Output:
+	// A
 }
 
 func BenchmarkPool_Get(b *testing.B) {
@@ -51,7 +51,6 @@ func BenchmarkPool_Get(b *testing.B) {
 			return ""
 		},
 	}
-
 	b.Run("Pool", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			p.Get()

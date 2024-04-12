@@ -6,18 +6,21 @@ var (
 	_ List[any] = &LinkedList[any]{}
 )
 
+// node 双向循环链表结点
 type node[T any] struct {
 	prev *node[T]
 	next *node[T]
 	val  T
 }
 
+// LinkedList 双向循环链表
 type LinkedList[T any] struct {
 	head   *node[T]
 	tail   *node[T]
 	length int
 }
 
+// NewLinkedList 创建一个双向循环链表
 func NewLinkedList[T any]() *LinkedList[T] {
 	head := &node[T]{}
 	tail := &node[T]{next: head, prev: head}
@@ -28,6 +31,7 @@ func NewLinkedList[T any]() *LinkedList[T] {
 	}
 }
 
+// NewLinkedListOf 将切片转换为双向循环链表, 直接使用了切片元素的值，而没有进行复制
 func NewLinkedListOf[T any](ts []T) *LinkedList[T] {
 	list := NewLinkedList[T]()
 	if err := list.Append(ts...); err != nil {
@@ -36,15 +40,44 @@ func NewLinkedListOf[T any](ts []T) *LinkedList[T] {
 	return list
 }
 
+func (l *LinkedList[T]) Len() int {
+	return l.length
+}
+
+func (l *LinkedList[T]) Cap() int {
+	return l.Len()
+}
+
+func (l *LinkedList[T]) checkIndex(index int) bool {
+	return 0 <= index && index < l.Len()
+}
+
+func (l *LinkedList[T]) findNode(index int) *node[T] {
+	var cur *node[T]
+	if index <= l.Len()/2 {
+		cur = l.head
+		for i := -1; i < index; i++ {
+			cur = cur.next
+		}
+	} else {
+		cur = l.tail
+		for i := l.Len(); i > index; i-- {
+			cur = cur.prev
+		}
+	}
+	return cur
+}
+
 func (l *LinkedList[T]) Get(index int) (T, error) {
 	if !l.checkIndex(index) {
-		var zero T
-		return zero, errs.NewErrIndexOutOfRange(l.Len(), index)
+		var zeroValue T
+		return zeroValue, errs.NewErrIndexOutOfRange(l.Len(), index)
 	}
 	n := l.findNode(index)
 	return n.val, nil
 }
 
+// Append 往链表最后添加元素
 func (l *LinkedList[T]) Append(ts ...T) error {
 	for _, t := range ts {
 		node := &node[T]{prev: l.tail.prev, next: l.tail, val: t}
@@ -54,8 +87,10 @@ func (l *LinkedList[T]) Append(ts ...T) error {
 	return nil
 }
 
+// Add 在 LinkedList 下标为 index 的位置插入一个元素
+// 当 index 等于 LinkedList 长度等同于 Append
 func (l *LinkedList[T]) Add(index int, t T) error {
-	if index < 0 || index > l.length {
+	if index < 0 || index > l.Len() {
 		return errs.NewErrIndexOutOfRange(l.Len(), index)
 	}
 	if index == l.length {
@@ -77,26 +112,19 @@ func (l *LinkedList[T]) Set(index int, t T) error {
 	return nil
 }
 
+// Delete 删除指定位置的元素
 func (l *LinkedList[T]) Delete(index int) (T, error) {
 	if !l.checkIndex(index) {
-		var zero T
-		return zero, errs.NewErrIndexOutOfRange(l.Len(), index)
+		var zeroValue T
+		return zeroValue, errs.NewErrIndexOutOfRange(l.Len(), index)
 	}
 	node := l.findNode(index)
-	node.prev.next, node.next.prev = node.next, node.prev
+	node.prev.next = node.next
+	node.next.prev = node.prev
 	node.prev, node.next = nil, nil
 	l.length--
 	return node.val, nil
 }
-
-func (l *LinkedList[T]) Len() int {
-	return l.length
-}
-
-func (l *LinkedList[T]) Cap() int {
-	return l.Len()
-}
-
 func (l *LinkedList[T]) Range(fn func(index int, t T) error) error {
 	for cur, i := l.head.next, 0; i < l.length; i++ {
 		err := fn(i, cur.val)
@@ -109,31 +137,10 @@ func (l *LinkedList[T]) Range(fn func(index int, t T) error) error {
 }
 
 func (l *LinkedList[T]) AsSlice() []T {
-	slice := make([]T, 0, l.length)
+	slice := make([]T, l.length)
 	for cur, i := l.head.next, 0; i < l.length; i++ {
-		//slice[i] = cur.val
-		slice = append(slice, cur.val)
+		slice[i] = cur.val
 		cur = cur.next
 	}
 	return slice
-}
-
-func (l *LinkedList[T]) checkIndex(index int) bool {
-	return 0 <= index && index < l.Len()
-}
-
-func (l *LinkedList[T]) findNode(index int) *node[T] {
-	var cur *node[T]
-	if index <= l.Len()/2 {
-		cur = l.head
-		for i := -1; i < index; i++ {
-			cur = cur.next
-		}
-	} else {
-		cur = l.tail
-		for i := l.Len(); i > index; i-- {
-			cur = cur.prev
-		}
-	}
-	return cur
 }

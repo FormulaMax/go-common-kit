@@ -4,7 +4,7 @@ import (
 	"errors"
 	go_common_kit "github.com/FormulaMax/go-common-kit"
 	"github.com/FormulaMax/go-common-kit/internal/errs"
-	"math/rand"
+	"golang.org/x/exp/rand"
 )
 
 const (
@@ -24,9 +24,9 @@ type SkipList[T any] struct {
 	size    int
 }
 
-func newSkipListNode[T any](Val T, level int) *skipListNode[T] {
+func newSkipListNode[T any](val T, level int) *skipListNode[T] {
 	return &skipListNode[T]{
-		Val:     Val,
+		Val:     val,
 		Forward: make([]*skipListNode[T], level),
 	}
 }
@@ -77,13 +77,11 @@ func (sl *SkipList[T]) Search(target T) bool {
 	return curr != nil && sl.compare(curr.Val, target) == 0
 }
 
-func (sl *SkipList[T]) traverse(Val T, level int) (*skipListNode[T], []*skipListNode[T]) {
+func (sl *SkipList[T]) traverse(val T, level int) (*skipListNode[T], []*skipListNode[T]) {
 	update := make([]*skipListNode[T], MaxLevel)
 	curr := sl.header
-	// 从高级别index开始
 	for i := level - 1; i >= 0; i-- {
-		//
-		for curr.Forward[i] != nil && sl.compare(curr.Forward[i].Val, Val) < 0 {
+		for curr.Forward[i] != nil && sl.compare(curr.Forward[i].Val, val) < 0 {
 			curr = curr.Forward[i]
 		}
 		update[i] = curr
@@ -91,8 +89,8 @@ func (sl *SkipList[T]) traverse(Val T, level int) (*skipListNode[T], []*skipList
 	return curr, update
 }
 
-func (sl *SkipList[T]) Insert(Val T) {
-	_, update := sl.traverse(Val, sl.level)
+func (sl *SkipList[T]) Insert(val T) {
+	_, update := sl.traverse(val, sl.level)
 	level := sl.randomLevel()
 	if level > sl.level {
 		for i := sl.level; i < level; i++ {
@@ -101,12 +99,13 @@ func (sl *SkipList[T]) Insert(Val T) {
 		sl.level = level
 	}
 
-	newNode := newSkipListNode[T](Val, level)
+	// 插入新节点
+	newNode := newSkipListNode[T](val, level)
 	for i := 0; i < level; i++ {
 		newNode.Forward[i] = update[i].Forward[i]
 		update[i].Forward[i] = newNode
 	}
-	sl.size++
+	sl.size += 1
 }
 
 func (sl *SkipList[T]) Len() int {
@@ -116,8 +115,6 @@ func (sl *SkipList[T]) Len() int {
 func (sl *SkipList[T]) DeleteElement(target T) bool {
 	curr, update := sl.traverse(target, sl.level)
 	node := curr.Forward[0]
-
-	//
 	if node == nil || sl.compare(node.Val, target) != 0 {
 		return true
 	}
@@ -127,7 +124,7 @@ func (sl *SkipList[T]) DeleteElement(target T) bool {
 	for sl.level > 1 && sl.header.Forward[sl.level-1] == nil {
 		sl.level--
 	}
-	sl.size--
+	sl.level -= 1
 	return true
 }
 

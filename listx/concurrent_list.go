@@ -6,14 +6,11 @@ var (
 	_ List[any] = &ConcurrentList[any]{}
 )
 
+// ConcurrentList 用读写锁封装了对 List 的操作
+// 达到线程安全的目标
 type ConcurrentList[T any] struct {
 	List[T]
 	lock sync.RWMutex
-}
-
-func NewConcurrentListOfSlice[T any](ts []T) *ConcurrentList[T] {
-	var list List[T] = NewArrayListOf(ts)
-	return &ConcurrentList[T]{List: list}
 }
 
 func (c *ConcurrentList[T]) Get(index int) (T, error) {

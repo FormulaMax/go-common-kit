@@ -12,55 +12,53 @@ func TestArrayList_Add(t *testing.T) {
 	testCases := []struct {
 		name      string
 		list      *ArrayList[int]
-		val       int
 		index     int
-		wantErr   error
+		newVal    int
 		wantSlice []int
+		wantErr   error
 	}{
 		{
-			name:    "index out of range",
-			list:    NewArrayListOf([]int{1}),
-			val:     1,
-			index:   11,
-			wantErr: errs.NewErrIndexOutOfRange(1, 11),
-		},
-		{
-			name:    "minus index",
-			list:    NewArrayListOf([]int{1}),
-			val:     1,
-			index:   -11,
-			wantErr: errs.NewErrIndexOutOfRange(1, -11),
-		},
-		{
-			name:      "add to left",
-			list:      NewArrayListOf([]int{4, 2, 3}),
-			val:       1,
+			name:      "add num to index left",
+			list:      NewArrayListOf[int]([]int{1, 2, 3}),
+			newVal:    100,
 			index:     0,
-			wantErr:   nil,
-			wantSlice: []int{1, 4, 2, 3},
+			wantSlice: []int{100, 1, 2, 3},
 		},
 		{
-			name:      "add to middle",
-			list:      NewArrayListOf([]int{4, 2, 3}),
-			val:       1,
-			index:     1,
-			wantErr:   nil,
-			wantSlice: []int{4, 1, 2, 3},
-		},
-		{
-			name:      "add to right",
-			list:      NewArrayListOf([]int{1, 2, 3}),
-			val:       1,
+			name:      "add num to index right",
+			list:      NewArrayListOf[int]([]int{1, 2, 3}),
+			newVal:    100,
 			index:     3,
-			wantErr:   nil,
-			wantSlice: []int{1, 2, 3, 1},
+			wantSlice: []int{1, 2, 3, 100},
+		},
+		{
+			name:      "add num to index mid",
+			list:      NewArrayListOf[int]([]int{1, 2, 3}),
+			newVal:    100,
+			index:     1,
+			wantSlice: []int{1, 100, 2, 3},
+		},
+		{
+			name:    "add num to index -1",
+			list:    NewArrayListOf[int]([]int{1, 2, 3}),
+			newVal:  100,
+			index:   -1,
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, -1),
+		},
+		{
+			name:    "add num to index OutOfRange",
+			list:    NewArrayListOf[int]([]int{1, 2, 3}),
+			newVal:  100,
+			index:   4,
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 3, 4),
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.list.Add(tc.index, tc.val)
+			err := tc.list.Add(tc.index, tc.newVal)
 			assert.Equal(t, tc.wantErr, err)
+			// 因为返回了 error，所以我们不用继续往下比较了
 			if err != nil {
 				return
 			}
@@ -72,28 +70,28 @@ func TestArrayList_Add(t *testing.T) {
 func TestArrayList_Cap(t *testing.T) {
 	testCases := []struct {
 		name      string
-		list      *ArrayList[int]
 		expectCap int
+		list      *ArrayList[int]
 	}{
 		{
-			name:      "相等",
+			name:      "与实际容量相等",
 			expectCap: 5,
 			list: &ArrayList[int]{
 				vals: make([]int, 5),
 			},
 		},
 		{
-			name:      "nil",
+			name:      "用户传入nil",
 			expectCap: 0,
 			list: &ArrayList[int]{
 				vals: nil,
 			},
 		},
 	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := tc.list.Cap()
-			assert.Equal(t, tc.expectCap, actual)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := testCase.list.Cap()
+			assert.Equal(t, testCase.expectCap, actual)
 		})
 	}
 }
@@ -178,6 +176,7 @@ func TestArrayList_Append(t *testing.T) {
 			wantSlice: []int{},
 		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.list.Append(tc.newVal...)
@@ -232,6 +231,7 @@ func TestArrayList_Delete(t *testing.T) {
 	}
 }
 
+// TestArrayList_Delete_Shrinkage 测试缩容
 func TestArrayList_Delete_Shrink(t *testing.T) {
 	testCases := []struct {
 		name    string // 用例名称
@@ -413,14 +413,14 @@ func TestArrayList_Get(t *testing.T) {
 			list:    NewArrayListOf[int]([]int{123, 100}),
 			index:   2,
 			wantVal: 0,
-			wantErr: errs.NewErrIndexOutOfRange(2, 2),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 2, 2),
 		},
 		{
 			name:    "index -1",
 			list:    NewArrayListOf[int]([]int{123, 100}),
 			index:   -1,
 			wantVal: 0,
-			wantErr: errs.NewErrIndexOutOfRange(2, -1),
+			wantErr: fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 2, -1),
 		},
 	}
 
@@ -436,7 +436,6 @@ func TestArrayList_Get(t *testing.T) {
 		})
 	}
 }
-
 func TestArrayList_Range(t *testing.T) {
 	testCases := []struct {
 		name    string
@@ -525,7 +524,7 @@ func TestArrayList_Set(t *testing.T) {
 			index:     -1,
 			newVal:    5,
 			wantSlice: []int{},
-			wantErr:   errs.NewErrIndexOutOfRange(5, -1),
+			wantErr:   fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 5, -1),
 		},
 		{
 			name:      "index  100",
@@ -533,7 +532,7 @@ func TestArrayList_Set(t *testing.T) {
 			index:     100,
 			newVal:    5,
 			wantSlice: []int{},
-			wantErr:   errs.NewErrIndexOutOfRange(5, 100),
+			wantErr:   fmt.Errorf("go-common-kit: 下标超出范围，长度 %d, 下标 %d", 5, 100),
 		},
 	}
 

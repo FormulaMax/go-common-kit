@@ -1,17 +1,15 @@
 package mapx
 
-type LinkedMap[K any, V any] struct {
-	m      mapx[K, *linkedKV[K, V]]
-	head   *linkedKV[K, V]
-	tail   *linkedKV[K, V]
-	length int
+type linkedKV[K any, V any] struct {
+	key        K
+	val        V
+	prev, next *linkedKV[K, V]
 }
 
-type linkedKV[K any, V any] struct {
-	key  K
-	val  V
-	prev *linkedKV[K, V]
-	next *linkedKV[K, V]
+type LinkedMap[K any, V any] struct {
+	m          mapi[K, *linkedKV[K, V]]
+	head, tail *linkedKV[K, V]
+	length     int
 }
 
 func NewLinkedHashMap[K Hashable, V any](size int) *LinkedMap[K, V] {
@@ -26,54 +24,65 @@ func NewLinkedHashMap[K Hashable, V any](size int) *LinkedMap[K, V] {
 	}
 }
 
-//func NewLinkedTreeMap[K any, V any](comparator go_common_kit.Comparator[K]) (*LinkedMap[K, V], error) {
-//	treeMap, err := NewTreeMap
-//}
+// TODO
+//func NewLinkedTreeMap[K any,V any]
 
-func (l *LinkedMap[K, V]) Put(key K, val V) error {
-	if lk, ok := l.m.Get(key); ok {
+func (lm *LinkedMap[K, V]) Put(key K, val V) error {
+	if lk, ok := lm.m.Get(key); ok {
 		lk.val = val
 		return nil
 	}
 	lk := &linkedKV[K, V]{
 		key:  key,
 		val:  val,
-		prev: l.tail.prev,
-		next: l.tail,
+		prev: lm.tail.prev,
+		next: lm.tail,
 	}
-	if err := l.m.Put(key, lk); err != nil {
+	if err := lm.m.Put(key, lk); err != nil {
 		return err
 	}
 	lk.prev.next, lk.next.prev = lk, lk
-	l.length++
+	lm.length++
 	return nil
 }
 
-func (l *LinkedMap[K, V]) Get(key K) (V, bool) {
-	if lk, ok := l.m.Get(key); ok {
-		lk.prev.next = lk.next
-		lk.next.prev = lk.prev
-		l.length--
-		return lk.val, true
+func (lm *LinkedMap[K, V]) Get(key K) (V, bool) {
+	if lk, ok := lm.m.Get(key); ok {
+		return lk.val, ok
 	}
-	var val V
-	return val, false
+	var v V
+	return v, false
 }
 
-func (l *LinkedMap[K, V]) Keys() []K {
-	keys := make([]K, 0, l.length)
-	for cur := l.head.next; cur != l.tail; {
+func (lm *LinkedMap[K, V]) Delete(key K) (V, bool) {
+	if lk, ok := lm.m.Delete(key); ok {
+		lk.prev.next = lk.next
+		lk.next.prev = lk.prev
+		lm.length--
+		return lk.val, ok
+	}
+	var v V
+	return v, false
+}
+
+func (lm *LinkedMap[K, V]) Keys() []K {
+	keys := make([]K, 0, lm.length)
+	for cur := lm.head.next; cur != lm.tail; {
 		keys = append(keys, cur.key)
 		cur = cur.next
 	}
 	return keys
 }
 
-func (l *LinkedMap[K, V]) Values() []V {
-	values := make([]V, 0, l.length)
-	for cur := l.head.next; cur != l.tail; {
+func (lm *LinkedMap[K, V]) Values() []V {
+	values := make([]V, 0, lm.length)
+	for cur := lm.head.next; cur != lm.tail; {
 		values = append(values, cur.val)
 		cur = cur.next
 	}
 	return values
+}
+
+func (lm *LinkedMap[K, V]) Len() int64 {
+	return int64(lm.length)
 }
